@@ -1,0 +1,43 @@
+# Base : f1tenth_system@jazzy-devel f1tenth_stack/config/vesc.yaml.
+# Valeurs de départ : docs/ROBOCAR_TO_DO_ROS2.md §7.
+/**:
+  # paramètres communs aux trois nœuds vesc
+  ros__parameters:
+    # erpm = speed_to_erpm_gain * vitesse (m/s) + speed_to_erpm_offset
+    speed_to_erpm_gain: 4614.0
+    speed_to_erpm_offset: 0.0
+
+    # servo (0 à 1) = steering_angle_to_servo_gain * angle (rad) + steering_angle_to_servo_offset
+    # Signe à choisir pour qu'un angle positif tourne à gauche (REP-103)
+    steering_angle_to_servo_gain: -0.88
+    steering_angle_to_servo_offset: 0.50
+
+    port: /dev/vesc
+    duty_cycle_min: 0.0
+    duty_cycle_max: 0.0
+    current_min: 0.0
+    current_max: 100.0
+    brake_min: -20000.0
+    brake_max: 200000.0
+    # ERPM, ±5000 ≈ ±1 m/s
+    speed_min: -5000.0
+    speed_max: 5000.0
+    position_min: 0.0
+    position_max: 0.0
+    servo_min: 0.20
+    servo_max: 0.80
+
+ackermann_to_vesc_node:
+  ros__parameters:
+    # [robocar] vitesse 0 si rien sur ackermann_cmd pendant ce délai (s), voir third_party/VENDORED.md
+    # 0,1 s : /drive doit donc être publié à plus de 10 Hz
+    cmd_timeout: 0.1
+
+vesc_to_odom_node:
+  ros__parameters:
+    odom_frame: odom
+    base_frame: base_link
+    publish_tf: true
+    use_servo_cmd_to_calc_angular_velocity: true
+    # à remesurer
+    wheelbase: 0.26

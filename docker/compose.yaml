@@ -1,0 +1,47 @@
+# Une brique par service, chacune dans son profil : rien ne démarre sans être demandé.
+#   docker compose -f docker/compose.yaml --profile control --profile lidar up -d
+# Services GPS (phase 7) et GPU (phase 8) : à ajouter.
+
+x-ros: &ros
+  image: robocar:jazzy
+  network_mode: host
+  ipc: host
+  # Pas de relance automatique, même au redémarrage de la Jetson (démarrage auto : plus tard, systemd)
+  restart: "no"
+  env_file: ../.env
+
+services:
+  control:
+    <<: *ros
+    profiles: [control]
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: ros2 launch robocar_bringup control.launch.py
+    devices:
+      - /dev/vesc
+      - /dev/input
+
+  lidar:
+    <<: *ros
+    profiles: [lidar]
+    command: ros2 launch robocar_bringup lidar.launch.py
+    devices:
+      - /dev/lidar
+
+  camera_3d_oak:
+    <<: *ros
+    profiles: [camera_3d_oak]
+    command: ros2 launch robocar_bringup camera_3d_oak.launch.py
+    # L'OAK change d'ID USB au démarrage (bootloader puis application) : accès à tout le bus
+    privileged: true
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+
+  camera:
+    <<: *ros
+    profiles: [camera]
+    command: ros2 launch robocar_bringup camera.launch.py
+    # Selon la caméra : décommenter pour une webcam USB (une caméra réseau n'a besoin de rien)
+    # devices:
+    #   - /dev/video0

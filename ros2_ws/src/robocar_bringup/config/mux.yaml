@@ -1,0 +1,21 @@
+# Base : f1tenth_system@jazzy-devel f1tenth_stack/config/mux.yaml, plus le lock drive_enable.
+# Chaîne de sécurité : docs/ROBOCAR_TO_DO_ROS2.md §2.
+ackermann_mux:
+  ros__parameters:
+    topics:
+      navigation:
+        topic: drive
+        timeout: 0.2
+        priority: 10
+      joystick:
+        topic: teleop
+        timeout: 0.2
+        priority: 100
+    locks:
+      # Déverrouillé seulement tant que joy_teleop publie false (RB maintenu).
+      # Expiré ou jamais reçu = verrouillé : /drive (priorité < 100) est masqué.
+      # 0,1 s : avec le watchdog de 0,1 s, arrêt en 0,2 s au pire si la manette meurt
+      drive_enable:
+        topic: drive_enable
+        timeout: 0.1
+        priority: 100

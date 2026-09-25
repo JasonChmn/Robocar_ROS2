@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>robocar_camera</name>
+  <version>0.1.0</version>
+  <description>Nœud caméra générique : n'importe quelle source d'images, publiée sur /camera.</description>
+  <maintainer email="jason.chemin@epitech.eu">Jason Chemin</maintainer>
+  <license>MIT</license>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

@@ -1,0 +1,57 @@
+# Base : f1tenth_system@jazzy-devel f1tenth_stack/config/joy_teleop.yaml.
+# Numéros mesurés sur la F710 (2026-09-25, mode X, LED MODE éteinte) :
+# LB = 4, RB = 5, stick gauche vertical = axe 1 (haut = +),
+# stick droit horizontal = axe 3 (gauche = +). Axes 2 et 5 = gâchettes LT/RT
+# (1.0 au repos). LED MODE allumée : stick gauche et croix inversés (axes 6/7).
+joy:
+  ros__parameters:
+    device_id: 0
+    deadzone: 0.05
+    # republie /joy à 50 Hz même sans changement : nécessaire au lock drive_enable
+    # (5 messages par timeout de 0,1 s)
+    autorepeat_rate: 50.0
+    coalesce_interval: 0.01
+
+joy_teleop:
+  ros__parameters:
+    # Aucun bouton appuyé : consigne nulle sur /teleop (priorité 100), /drive bloqué
+    default:
+      type: topic
+      interface_type: ackermann_msgs/msg/AckermannDriveStamped
+      topic_name: teleop
+      axis_mappings:
+        drive-speed:
+          axis: 1
+          scale: 0.0
+          offset: 0.0
+        drive-steering_angle:
+          axis: 3
+          scale: 0.0
+          offset: 0.0
+
+    # LB maintenu : conduite manuelle
+    human_control:
+      type: topic
+      interface_type: ackermann_msgs/msg/AckermannDriveStamped
+      topic_name: teleop
+      deadman_buttons: [4]
+      axis_mappings:
+        drive-speed:
+          axis: 1
+          scale: 1.0
+          offset: 0.0
+        drive-steering_angle:
+          axis: 3
+          scale: 0.34
+          offset: 0.0
+
+    # RB maintenu : déverrouille /drive. axis_mappings (et non message_value) pour
+    # publier à chaque message /joy, et pas seulement au moment de l'appui.
+    drive_enable:
+      type: topic
+      interface_type: std_msgs/msg/Bool
+      topic_name: drive_enable
+      deadman_buttons: [5]
+      axis_mappings:
+        data:
+          value: false

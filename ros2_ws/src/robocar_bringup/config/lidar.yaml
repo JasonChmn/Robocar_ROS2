@@ -1,0 +1,15 @@
+# LDROBOT STL-19P (protocole LD19). Paramètres : third_party/ldlidar_stl_ros2/launch/ld19.launch.py
+ldlidar:
+  ros__parameters:
+    product_name: LDLiDAR_LD19
+    topic_name: scan
+    frame_id: laser
+    port_name: /dev/lidar
+    # 230400 pour STL-19P / LD19 ; le STL-27L est à 921600 (product_name LDLiDAR_STL27L)
+    port_baudrate: 230400
+    # sens antihoraire (REP-103)
+    laser_scan_dir: true
+    # masque le châssis s'il apparaît dans le scan (degrés, [min, max] mis à 0)
+    enable_angle_crop_func: false
+    angle_crop_min: 135.0
+    angle_crop_max: 225.0

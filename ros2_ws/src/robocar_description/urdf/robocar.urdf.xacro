@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!--
+  Robocar (Traxxas 1/10). REP-103 : x vers l'avant, y vers la gauche, z vers le haut.
+  base_link = centre de l'essieu arrière, au niveau du sol.
+  Positions PROVISOIRES : à mesurer sur la voiture (docs/ROBOCAR_TO_DO_ROS2.md §7).
+-->
+<robot name="robocar" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="fixed_frame" params="name x y z roll:=0 pitch:=0 yaw:=0">
+    <link name="${name}"/>
+    <joint name="base_link_to_${name}" type="fixed">
+      <parent link="base_link"/>
+      <child link="${name}"/>
+      <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
+    </joint>
+  </xacro:macro>
+
+  <link name="base_link"/>
+
+  <!-- LiDAR LD19 / STL-19P -->
+  <xacro:fixed_frame name="laser" x="0.25" y="0.0" z="0.15"/>
+  <!-- OAK-D Lite : depthai_ros_driver accroche ses propres frames sous oak-d-base-frame -->
+  <xacro:fixed_frame name="oak-d-base-frame" x="0.30" y="0.0" z="0.12"/>
+  <!-- Webcam USB -->
+  <xacro:fixed_frame name="camera_link" x="0.30" y="0.0" z="0.16"/>
+  <!-- Antenne GPS -->
+  <xacro:fixed_frame name="gps" x="0.10" y="0.0" z="0.20"/>
+
+</robot>

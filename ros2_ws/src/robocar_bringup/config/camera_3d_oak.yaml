@@ -1,0 +1,26 @@
+# OAK-D Lite (depthai_ros_driver 2.x). Topics : /oak/rgb/*, /oak/stereo/*
+# Exemples de paramètres : dossier share/depthai_ros_driver/config/ du paquet
+# (pas de substitution « dollar-parenthèse » ici, même en commentaire : le launch depthai les interprète)
+/oak:
+  ros__parameters:
+    camera:
+      i_pipeline_type: RGBD
+      i_nn_type: none
+      # IMU (BMI270) selon la révision : à vérifier (phase 4)
+      i_enable_imu: false
+      # pas de projecteur IR sur la Lite
+      i_enable_ir: false
+    rgb:
+      i_resolution: 1080P
+      # 1920x1080 × 1/3 = 640x360
+      i_set_isp_scale: true
+      i_isp_num: 1
+      i_isp_den: 3
+      i_fps: 15.0
+    # capteurs mono OV7251 de la Lite : 640x480 natif (480P)
+    left:
+      i_resolution: 480P
+      i_fps: 15.0
+    right:
+      i_resolution: 480P
+      i_fps: 15.0

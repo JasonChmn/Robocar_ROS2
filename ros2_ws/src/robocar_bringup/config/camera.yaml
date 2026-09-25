@@ -1,0 +1,4 @@
+# Caméra générique (robocar_camera). Paramètres à compléter avec le code du nœud.
+camera_node:
+  ros__parameters:
+    frame_id: camera_link
