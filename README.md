@@ -44,14 +44,13 @@ sudo ufw allow from 10.42.0.0/24
 
 # Le code
 git clone https://github.com/JasonChmn/Robocar_ROS2.git
-cd Robocar_ROS2 && cp .env.example .env    # puis remplir ROS_DOMAIN_ID
 ```
 
 **`ROS_DOMAIN_ID` : obligatoire, et différent pour chaque équipe.** Tous les appareils qui ont le même ID sur un même réseau se voient. Deux équipes avec le même ID pourraient **commander la voiture de l'autre**.
 - La règle : le numéro de votre département sur deux chiffres (Hauts-de-Seine → 92). Avec plusieurs équipes dans le même département, arrangez-vous en faisant ±1.
 - Corse → 20. Outre-mer → entre 96 et 101.
 - Jamais 0 (la valeur par défaut de tout le monde), jamais plus de 101.
-- La valeur doit être **identique** dans le `.env` de la Jetson et sur votre PC.
+- La valeur doit être **identique** dans `~/Robocar_ROS2/.env` sur la Jetson (lu par les conteneurs) et dans vos terminaux sur le PC (ci-dessous).
 
 Dans chaque terminal du PC (ou dans votre `~/.bashrc`) :
 
@@ -125,7 +124,7 @@ Détail : `ARCHITECTURE.md`, « Chaîne de sécurité ».
 - Les **premiers essais d'un nouveau code se font roues en l'air** (la voiture posée sur une cale).
 - Au sol, une personne tient **toujours** la manette, le pouce sur RB.
 - Surveillez la batterie (`voltage_input` dans `/sensors/core`) : **arrêt sous 14,0 V**.
-- La vitesse est limitée à environ 1 m/s (±5000 ERPM, `config/vesc.yaml`). Ne l'augmentez que progressivement.
+- La vitesse est limitée à ±5000 ERPM (`config/vesc.yaml`), soit environ 1 m/s. C'est approximatif tant que `speed_to_erpm_gain` n'est pas calibré. N'augmentez la limite que progressivement.
 
 ## 5. Écrire son nœud
 
@@ -133,7 +132,7 @@ Votre nœud publie des `ackermann_msgs/msg/AckermannDriveStamped` sur **`/drive`
 
 | Champ | Unité | Limites |
 |---|---|---|
-| `drive.speed` | m/s, + = avant | ~±1 m/s (limité par `vesc.yaml`) |
+| `drive.speed` | m/s, + = avant | ~±1 m/s (limité par `vesc.yaml`). Échelle pas encore calibrée : la vitesse réelle peut différer |
 | `drive.steering_angle` | rad, **+ = gauche** (REP-103) | ±0,34 rad |
 
 Exemple minimal, qui avance tout droit à 0,5 m/s :

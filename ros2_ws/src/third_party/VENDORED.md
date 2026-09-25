@@ -20,7 +20,7 @@ Source : https://github.com/f1tenth/f1tenth_system, branche `jazzy-devel`, commi
 |---|---|---|
 | `config/vesc.yaml` | `robocar_bringup/config/vesc.yaml` | Valeurs du §7 (servo, vitesse, empattement), `port: /dev/vesc`, `cmd_timeout: 0.1` (watchdog), `throttle_interpolator` retiré |
 | `config/mux.yaml` | `robocar_bringup/config/mux.yaml` | Lock `drive_enable` ajouté (priorité 100, 0,1 s) |
-| `config/joy_teleop.yaml` | `robocar_bringup/config/joy_teleop.yaml` | Numéros de boutons SDL2, vitesse max 1 m/s au lieu de 5, `autorepeat_rate` 50 Hz, profil `drive_enable` sur RB au lieu de `autonomous_control` |
+| `config/joy_teleop.yaml` | `robocar_bringup/config/joy_teleop.yaml` | Numéros de boutons et d'axes mesurés sur la F710 (LB 4, RB 5, axes 1 et 3), vitesse max 1 m/s au lieu de 5, `autorepeat_rate` 50 Hz, profil `drive_enable` sur RB au lieu de `autonomous_control` |
 | `config/f1tenth_online_async.yaml` | `pc/slam/f1tenth_online_async.yaml` | `base_frame: base_link` au lieu de `laser` |
 | `launch/bringup_launch.py` | `robocar_bringup/launch/control.launch.py` | Réécrit : mêmes nœuds, sans remapping du mux, sans `urg_node` ni TF statique (URDF), avec `robot_state_publisher` |
 

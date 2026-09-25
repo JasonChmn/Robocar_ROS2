@@ -31,7 +31,7 @@ Pour préparer une nouvelle voiture, suivre plutôt **`BOOTSTRAP.md`**, qui rés
 - Juste après la mise sous tension, `ssh` répond `No route to host` pendant environ 1 min, le temps que la Jetson démarre.
 - **Pas de `ssh` ni de `ping` après 2 min : vérifier que la carte SD est bien dans la Jetson** (par exemple, restée dans le lecteur du PC après une sauvegarde). Sans SD, le lien Ethernet s'allume quand même, ce qui peut tromper, mais Linux ne démarre pas : aucune demande DHCP (`journalctl --since "-10 min" | grep DHCPACK` sur le PC reste vide).
 
-## 1. Prochaine séance : contrôle + LiDAR, ROUES EN L'AIR
+## 1. Contrôle + LiDAR, ROUES EN L'AIR (fait le 2026-09-25)
 
 ### Avant d'allumer
 
@@ -61,6 +61,8 @@ ls -l /dev/vesc /dev/lidar /dev/input/
 - `/dev/vesc → ttyACM*` (major 166) et `/dev/lidar → ttyUSB*` (major 188). Le major est le premier des deux nombres affichés par `ls -l` à la place de la taille ;
 - la F710 crée des `event*` dans `/dev/input/`.
 
+> **Résultat** : VESC `0483:5740` (STM32F407) → `/dev/vesc → ttyACM0` ; LiDAR → `/dev/lidar → ttyUSB0` ; F710 `046d:c21f` (XInput Mode), `event0` à `event2` et `js0`.
+
 ### b. Lancer `control` + `lidar`
 
 `control` refuse de démarrer si `/dev/vesc` n'existe pas : c'est normal, `devices:` l'exige.
@@ -73,6 +75,8 @@ docker compose -f docker/compose.yaml logs -f control          # erreurs de para
 rc() { docker compose -f ~/Robocar_ROS2/docker/compose.yaml exec control /entrypoint.sh "$@"; }
 ```
 
+> **Résultat** : `control` démarre, avec quelques erreurs `Out-of-sync with VESC` au début, puis `Connected to VESC with firmware version 7.0`. Aucune autre erreur de paramètre.
+
 ### c. Manette : numéros des boutons
 
 ```bash
@@ -83,7 +87,7 @@ Appuyer sur LB, puis sur RB, et bouger les sticks.
 
 **À noter** : les indices réels de LB, de RB, de l'axe « stick gauche vertical » et de l'axe « stick droit horizontal ». S'ils diffèrent de la config, corriger `robocar_bringup/config/joy_teleop.yaml`, puis rebuild et `up -d --force-recreate control`.
 
-> **Résultat (2026-09-25)** : la manette suit la numérotation `xpad` (11 boutons, 8 axes), et non celle de SDL2 qui était supposée (9, 10, 1, 2). Mesuré :
+> **Résultat (2026-09-25)** : la manette suit la numérotation `xpad` (11 boutons, 8 axes), que `joy` transmet telle quelle, et non celle du mapping GameController de SDL2 qui était supposée (9, 10, 1, 2). Mesuré :
 > - LB = **4**, RB = **5**, A = 0 ;
 > - stick gauche vertical = axe **1** (haut = +), stick droit horizontal = axe **3** (gauche = +) ;
 > - axes 2 et 5 = gâchettes LT et RT, qui valent **1,0 au repos**. L'ancienne config mettait la direction sur l'axe 2 : avec LB, les roues seraient parties en butée.
@@ -182,6 +186,8 @@ tegrastats                              # sur l'hôte : CPU, RAM, température
 
 ## Manette dans le conteneur (si `/joy` ne publie rien, ou pour le rebranchement)
 
+> **2026-09-25** : `/joy` publie sans ce correctif, avec la manette branchée avant le démarrage. Le rebranchement à chaud n'est pas testé : le correctif ci-dessous reste une piste.
+
 Le `joy` de Jazzy passe par SDL2, qui reconnaît les manettes grâce à la base udev. Cette base est absente du conteneur : la F710 peut ne pas être détectée du tout, même branchée.
 
 Correctif proposé, pas encore appliqué : dans `docker/compose.yaml`, service `control`, remplacer `- /dev/input` sous `devices:` par :
@@ -217,7 +223,7 @@ Jetson éteinte proprement, SD dans le lecteur du PC :
 ```bash
 lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINT,TRAN   # repérer la carte (~60 Go, 14 partitions L4T, APP en p1) ; NE PAS se tromper de disque
 udisksctl unmount -b /dev/mmcblk0p1         # démonter si le bureau l'a montée (pas de sudo)
-sudo dd if=/dev/mmcblk0 of=~/Documents/projects/robocar/backups/jetson_sd_$(date +%F).img bs=4M status=progress conv=fsync
+sudo dd if=/dev/mmcblk0 of=~/Documents/projects/Robocar_usergroup/robocar/backups/jetson_sd_$(date +%F).img bs=4M status=progress conv=fsync
 ```
 
 - Nom du disque : `mmcblk0` dans un lecteur interne, `sdX` dans un adaptateur USB.
@@ -232,7 +238,7 @@ sudo dd if=/dev/mmcblk0 of=~/Documents/projects/robocar/backups/jetson_sd_$(date
 
 ```bash
 # PC
-rsync -a ~/Documents/projects/robocar/Robocar_ROS2/ robocar@10.42.0.239:~/Robocar_ROS2/
+rsync -a --exclude .env ~/Documents/projects/Robocar_usergroup/robocar/Robocar_ROS2/ robocar@10.42.0.239:~/Robocar_ROS2/
 # Jetson
 ping -c 3 8.8.8.8                       # Internet via le partage de connexion du PC (docker pull, apt, rosdep)
 docker run --rm -it --network host -e ROS_DOMAIN_ID=42 ros:jazzy-ros-base \

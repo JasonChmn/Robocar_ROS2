@@ -3,7 +3,7 @@
 # Vérifier les IDs réels avec lsusb.
 
 # ModemManager sonde les ports série au branchement (commandes AT) pour y chercher un modem.
-# Il occupe alors le port quelques secondes (vesc-config échoue avec « Device or resource busy »)
+# Il occupe alors le port quelques secondes (« Device or resource busy » pour qui l'ouvre)
 # et envoie des octets parasites. ModemManager 1.10 (18.04) lit ID_MM_DEVICE_IGNORE sur le
 # périphérique USB, pas sur le tty : d'où SUBSYSTEM=="usb".
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5740", ENV{ID_MM_DEVICE_IGNORE}="1"

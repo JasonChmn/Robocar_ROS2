@@ -2,11 +2,11 @@
 
 **Objectif.** Construire des briques de base ROS 2 modulaires et propres : contrôle, LiDAR, caméras, GPS et accès au GPU. Elles restent alignées sur F1TENTH, pour que les étudiants n'aient qu'à écrire leurs nœuds.
 
-Rien n'est repris des anciens projets, à part ce qu'ils ont appris sur le matériel (`ROBOCAR_DESIGN.md`). Tout est développé dans un nouveau dossier, **`Robocar_ROS2/`**, qui deviendra le dépôt git. Les anciens dossiers restent en archive, sans modification.
+Rien n'est repris des anciens projets, à part ce qu'ils ont appris sur le matériel (`ROBOCAR_DESIGN.md`). Tout est développé dans **`Robocar_ROS2/`**, qui est le dépôt git (`git@github.com:JasonChmn/Robocar_ROS2.git`, branche `master`). Les anciens dossiers restent en archive, sans modification, hors du dépôt.
 
 **Alimentation.** Prise jack 5 V 4 A, cavalier J48. Le micro-USB 2 A ne suffit pas en MAXN : voir `A_FAIRE_SUR_LA_JETSON.md` §0 (batterie 4S : pleine à 16,8 V, arrêt sous 14,0 V).
 
-**Cible et façon de travailler.** Le code tourne sur la **Jetson Nano, dont l'hôte reste en Ubuntu 18.04** (L4T R32.7.1). ROS 2 Jazzy n'est jamais installé sur l'hôte : il tourne dans les conteneurs Docker (§1). On écrit le code sur le PC, dans `Robocar_ROS2/`. On le copie ensuite sur la Jetson (rsync, puis git plus tard), et l'image arm64 est **construite sur la Jetson**. Le contenu de la Jetson a déjà été copié sur le PC (`ROBOCAR_TUTORIAL.md` §3). L'accès SSH marche.
+**Cible et façon de travailler.** Le code tourne sur la **Jetson Nano, dont l'hôte reste en Ubuntu 18.04** (L4T R32.7.1). ROS 2 Jazzy n'est jamais installé sur l'hôte : il tourne dans les conteneurs Docker (§1). On écrit le code sur le PC, dans `Robocar_ROS2/`. On le copie ensuite sur la Jetson (rsync pour l'instant, `git clone` à terme), et l'image arm64 est **construite sur la Jetson**. Le contenu de la Jetson a déjà été copié sur le PC (`ROBOCAR_TUTORIAL.md` §3). L'accès SSH marche.
 
 > Les valeurs chiffrées de ce document (fréquences, résolutions, limites, IDs) sont **des valeurs de départ**. Chaque fois, une note indique ce que change un réglage plus haut ou plus bas. Mesurez avant de modifier (voir §6).
 
@@ -20,7 +20,7 @@ Rien n'est repris des anciens projets, à part ce qu'ils ont appris sur le maté
 | Hôte Jetson | On garde L4T R32.7.1 / Ubuntu 18.04 et tout tourne dans Docker | La Nano ne peut pas être mise à jour. Le conteneur partage le kernel de l'hôte : seules les bibliothèques sont en 24.04 |
 | Image ROS | `ros:jazzy-ros-base` (arm64 officielle), **pas dusty-nv** | dusty-nv ne supporte plus que JetPack 6/7, et son image R32 n'a pas les paquets apt ROS |
 | GPU | Conteneur séparé `l4t-ml` (18.04, CUDA 10.2) relié à ROS par ZeroMQ (§8, phase 8) | CUDA 10.2 n'existe que pour 18.04 / Python 3.6, alors que Jazzy est en Python 3.12 |
-| Référence | Stack **F1TENTH** : `vesc`, `ackermann_mux`, `joy_teleop` | Même classe de voiture : Traxxas 1/10, Velineon, VESC, F710 |
+| Référence | Stack **F1TENTH** : `vesc`, `ackermann_mux`, `joy_teleop` | Même classe de voiture : Traxxas 1/10, brushless sans capteur, VESC, F710 (F1TENTH : Velineon ; nous : BL-2s) |
 | Code tiers | **Snapshot copié** dans `third_party/`, sans `.git` ni submodule, commit d'origine noté | Les mises à jour en amont ne peuvent rien casser, et on peut patcher le code |
 | Découpage | 1 image ROS, **1 service `docker compose` par brique**, chacun activé par un profil | On lance seulement les capteurs présents, et le crash d'une brique ne touche pas les autres |
 | Conventions | Topics et frames F1TENTH, REP-103/105, pas de namespace | Les configs SLAM, le simulateur et les tutoriels F1TENTH marchent tels quels |
@@ -229,7 +229,7 @@ Avec ROS 2, un nœud tourne indifféremment sur la Jetson ou sur le PC. C'est un
 
 La F710 doit être en mode **X** (interrupteur au dos). Vérifier la numérotation des boutons avec `ros2 topic echo /joy`.
 
-- Les numéros ne sont pas ceux de la config F1TENTH (`deadman_buttons: [6]`, `[8]`). On supposait la numérotation SDL2 (LB = 9, RB = 10), mais la mesure du 2026-09-25 donne la numérotation `xpad` (11 boutons, 8 axes) :
+- Les numéros ne sont pas ceux de la config F1TENTH (`deadman_buttons: [6]`, `[8]`). On supposait celle du mapping GameController de SDL2 (LB = 9, RB = 10). La mesure du 2026-09-25 donne la numérotation brute du pilote `xpad` (11 boutons, 8 axes), que `joy` transmet telle quelle :
   - LB = **4**, RB = **5**, A = 0 ;
   - stick gauche vertical = axe **1** (haut = +), stick droit horizontal = axe **3** (gauche = +) ;
   - axes 2 et 5 = gâchettes LT et RT, qui valent **1,0 au repos** : ne jamais y mettre la direction.
@@ -257,7 +257,7 @@ Les tests de cette phase, comme tous les tests sur le matériel, se font sur pla
   - [x] `nvpmodel -m 0` (MAXN) ;
   - [x] chrony : `^*` sur le PC ;
   - [x] vérifier l'espace disque (`df -h`, `docker system df`) : 59 Go, dont **41 Go libres** avant le script, et 36 Go après (swap et image `ros:jazzy-ros-base` compris).
-- [ ] Règles udev dans `host/99-robocar.rules` (installées par `setup_host.sh`, à vérifier avec le matériel branché) :
+- [x] Règles udev dans `host/99-robocar.rules` (installées par `setup_host.sh`). Vérifié le 2026-09-25 : `/dev/vesc → ttyACM0`, `/dev/lidar → ttyUSB0`. Règle OAK pas encore vérifiée :
 
   | Périphérique | ID USB |
   |---|---|
@@ -321,7 +321,7 @@ Les tests de cette phase, comme tous les tests sur le matériel, se font sur pla
 - [x] Ajouter `joy` et `joy_teleop` : avec LB maintenu, les roues et la direction répondent. LB relâché, tout s'arrête. Numéros relevés (§7) et `joy_teleop.yaml` corrigé.
 - [x] Chaîne de sécurité (§2), faite en phase 1 et testée sur le PC :
   - profil RB → `std_msgs/Bool` `false` sur `drive_enable` (`joy_teleop.yaml`) ;
-  - lock `drive_enable` dans `mux.yaml` (priorité 100, timeout 0,2 s) ;
+  - lock `drive_enable` dans `mux.yaml` (priorité 100, timeout 0,1 s) ;
   - watchdog `cmd_timeout` dans `ackermann_to_vesc` (patch, voir `VENDORED.md`).
 - [x] Ajouter `ackermann_mux`, **sans remapping** (vérifié : les commandes arrivent bien au moteur par `ackermann_cmd`) : il publie directement `ackermann_cmd` (`ackermann_mux.cpp:91`), et c'est ce topic qu'écoute `ackermann_to_vesc`. Le remapping `ackermann_cmd_out → ackermann_drive` du launch F1TENTH vise un topic qui n'existe pas, donc il ne fait rien. Contrôler avec `ros2 node info` ou `rqt_graph`.
 - [x] Publier `/drive` à la main avec RB maintenu, puis vérifier que la manette garde la priorité (2026-09-25).
@@ -446,7 +446,10 @@ Les nœuds ROS (Jazzy, Python 3.12) ne peuvent pas charger CUDA 10.2. Le GPU pas
 - [ ] **Wi-Fi** : vérifier que le chipset du dongle a un driver pour le kernel 4.9, puis refaire les tests du §6. Passer à Zenoh si besoin.
 - [ ] **Surveillance batterie** : un nœud qui lit `/sensors/core` et coupe `/drive` sous un seuil de tension.
 - [ ] **Démarrage automatique** : service systemd qui lance `docker compose up`.
-- [ ] **Git et CI** : build arm64 dans GitHub Actions, images publiées sur GHCR ; les étudiants n'ont plus qu'à faire `docker compose pull`.
+- [x] **Dépôt git** : `github.com/JasonChmn/Robocar_ROS2` (2026-09-25).
+- [ ] Remplacer la copie rsync de la Jetson par un `git clone`, en gardant son `.env`.
+- [ ] **CI** : build arm64 dans GitHub Actions, images publiées sur GHCR ; les étudiants n'ont plus qu'à faire `docker compose pull`.
+- [ ] Refaire l'image SD de référence (celle du 2026-09-25 au matin a encore `vesc-config` activé et l'ancienne config de la manette).
 - [ ] **Nav2**, une fois le SLAM stable.
 - [ ] **VPU de l'OAK-D Lite** : exécuter un réseau directement dans la caméra (voir §10).
 
@@ -467,8 +470,8 @@ Les nœuds ROS (Jazzy, Python 3.12) ne peuvent pas charger CUDA 10.2. Le GPU pas
 
 | Fichier | À lire pour | Sections utiles |
 |---|---|---|
-| `ROBOCAR_DESIGN.md` | Le matériel réel : VESC, moteur, LiDAR, OAK, F710, ports, protocole VESC, historique du réglage moteur | §1, §3, §5 (le reste décrit l'ancien code, à ne pas reprendre) |
-| `ROBOCAR_TUTORIAL.md` | Accès à la Jetson (SSH, mot de passe, IP), règles udev, commandes utiles | §1, §2, §6.1, §6.2, §8. **Attention** : ses §4, §5 et §7 (Humble, dustynv) sont remplacés par ce fichier |
+| `../ROBOCAR_DESIGN.md` (hors dépôt) | Le matériel réel : VESC, moteur, LiDAR, OAK, F710, ports, protocole VESC, historique du réglage moteur | §1, §3, §5 (le reste décrit l'ancien code, à ne pas reprendre) |
+| `../ROBOCAR_TUTORIAL.md` (hors dépôt) | Accès à la Jetson (SSH, mot de passe, IP), règles udev, commandes utiles | §1, §2, §6.1, §6.2, §8. **Attention** : ses §4, §5 et §7 (Humble, dustynv) sont remplacés par ce fichier |
 | `F1Tenth/` | **Supprimé.** Les références se trouvent sur GitHub aux commits de la phase 1. `f1tenth_gym_ros` est à cloner en `dev-jazzy` pour la phase 6 | — |
 
 Non nécessaires : `ROBOCAR_DISCUSSION_0.md` et `ROBOCAR_Dusty_nv.md`, dont les conclusions sont reprises au §1.

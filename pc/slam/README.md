@@ -25,7 +25,7 @@ docker compose -f docker/compose.yaml --profile control --profile lidar up -d
 sudo apt install ros-jazzy-slam-toolbox ros-jazzy-nav2-map-server
 ```
 
-Les réglages réseau sont ceux de `A_FAIRE_SUR_LA_JETSON.md` (« Déjà fait » D et F, et « Pourquoi ces réglages ») : chrony, `ufw`, même `ROS_DOMAIN_ID`, `ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET`.
+Les réglages réseau sont ceux de `README.md` §2 : chrony, `ufw`, même `ROS_DOMAIN_ID`, `ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET`.
 
 ## Lancer
 
