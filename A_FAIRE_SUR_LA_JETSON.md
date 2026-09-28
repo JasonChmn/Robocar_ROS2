@@ -22,11 +22,10 @@ Pour préparer une nouvelle voiture, suivre plutôt **`BOOTSTRAP.md`**, qui rés
 ## 0. Alimentation
 
 - **Prise jack 5 V 4 A, cavalier J48 en place.** Le micro-USB 5 V 2 A ne suffit pas en MAXN (10 W) : sous la charge du build, ou avec des périphériques USB (l'OAK peut tirer jusqu'à ~1 A), la tension chute et la Jetson s'éteint sans prévenir, avec un risque de corrompre la SD. Au pire, en micro-USB : `sudo nvpmodel -m 1` (5 W), rien de branché, et pas de build.
-- **Batterie 4S** (14,8 V nominal, 3700 mAh, 54,76 Wh) avec un convertisseur 5 V :
+- **Une seule batterie 4S par voiture**, qui alimente le VESC et, par un convertisseur 5 V, la Jetson. Selon la voiture : Ovonic **2200 mAh** 120C (32,56 Wh) ou **3700 mAh** (54,76 Wh). Mêmes seuils pour les deux :
   - pleine à **16,8 V**. 14,8 V est la tension nominale, pas le maximum : à 14,7 V, elle n'est plus qu'à environ 30-40 % ;
-  - **arrêter sous 14,0 V** (3,5 V par cellule) ;
-  - la Jetson seule consomme environ 12 W, pertes du convertisseur comprises : un peu plus de 4 h d'autonomie avec une batterie pleine. Avec le moteur, c'est beaucoup moins.
-- **Batterie moteur (VESC)** : Ovonic **4S 2200 mAh** 120C (32,56 Wh), mêmes seuils (pleine à 16,8 V, arrêt sous 14,0 V). Le VESC réduit la puissance à partir de 14,0 V et coupe à 13,2 V (`host/vesc/README.md`).
+  - **arrêter sous 14,0 V** (3,5 V par cellule). Le VESC réduit la puissance à partir de 14,0 V et coupe à 13,2 V (`host/vesc/README.md`) ;
+  - la Jetson seule consomme environ 12 W, pertes du convertisseur comprises : environ 4 h d'autonomie avec la 3700, 2 h 30 avec la 2200. Avec le moteur, c'est beaucoup moins.
 - **Toujours éteindre proprement** avant de débrancher : `sudo shutdown -h now`, puis attendre que les LED s'éteignent. Une coupure franche se rattrape en général (journal ext4 rejoué au démarrage), mais peut corrompre la SD.
 - Juste après la mise sous tension, `ssh` répond `No route to host` pendant environ 1 min, le temps que la Jetson démarre.
 - **Pas de `ssh` ni de `ping` après 2 min : vérifier que la carte SD est bien dans la Jetson** (par exemple, restée dans le lecteur du PC après une sauvegarde). Sans SD, le lien Ethernet s'allume quand même, ce qui peut tromper, mais Linux ne démarre pas : aucune demande DHCP (`journalctl --since "-10 min" | grep DHCPACK` sur le PC reste vide).
@@ -36,7 +35,7 @@ Pour préparer une nouvelle voiture, suivre plutôt **`BOOTSTRAP.md`**, qui rés
 ### Avant d'allumer
 
 - Voiture sur une cale, **roues en l'air**.
-- LiPo moteur chargée. Jetson sur la prise jack.
+- LiPo chargée. Jetson sur la prise jack (ou sur la batterie, par le convertisseur).
 - **VESC (alimenté), LiDAR et dongle F710 branchés *avant* d'allumer la Jetson.** La F710 doit être en mode **X** (interrupteur au dos).
 - **`vesc-config.service` est désactivé** (2026-09-25) et ne doit pas être réactivé. L'EEPROM du VESC n'était pas corrompue : c'est ce script de l'ancien projet qui écrasait la config à chaque démarrage. La config est maintenant stockée dans le VESC (`host/vesc/README.md`).
 

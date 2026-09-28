@@ -14,7 +14,7 @@ Pour une autre voiture avec le même matériel : dans VESC Tool, *File → Load 
 | VESC | **Hw 60** (famille VESC 6, probablement le Flipsky Mini V6.7 Pro), **Fw 7.00** (stable), MCU STM32F407 (`0483:5740`) |
 | Châssis | Traxxas Ford Fiesta ST Rally **BL-2s**, 74154-4 |
 | Moteur | **BL-2s 3300 kV**, inrunner 540, **4 pôles**, sans capteur, sans sonde de température. Prévu pour 2S |
-| Batterie moteur | **Ovonic 4S 2200 mAh 120C** (14,8 V, 32,56 Wh). Ce n'est pas la batterie 3700 mAh notée ailleurs |
+| Batterie | **Une LiPo 4S** par voiture, qui alimente aussi la Jetson : Ovonic **2200 mAh** 120C (32,56 Wh) ou **3700 mAh** (54,76 Wh) selon la voiture. Config faite avec la 2200 |
 | Transmission (README du pédago) | pignon 13, couronne 36, roues de 83 mm (à confirmer à la règle). Ces valeurs ne servent qu'à l'affichage dans VESC Tool |
 
 ## EEPROM : pas corrompue
@@ -29,7 +29,7 @@ La cause probable du problème était `vesc_autoconfig.sh` (`vesc-config.service
 
 ### 1. Connexion
 
-VESC en USB sur le PC, **LiPo moteur branchée** (nécessaire pour la détection), **roues en l'air**. L'utilisateur doit être dans le groupe `dialout`. **Connect**.
+VESC en USB sur le PC, **LiPo branchée** (nécessaire pour la détection), **roues en l'air**. L'utilisateur doit être dans le groupe `dialout`. **Connect**.
 
 ### 2. Assistant *Setup Motors FOC*
 
@@ -38,7 +38,7 @@ VESC en USB sur le PC, **LiPo moteur branchée** (nécessaire pour la détection
 | Remise aux valeurs d'usine | **Yes** | Faire d'abord une sauvegarde XML. Les anciens scripts avaient modifié des réglages internes (openloop, etc.) |
 | Usage | **Generic** | *Override advanced* décoché |
 | Motor | **Small Inrunner** | Une catégorie plus grande autorise trop de courant pendant la détection et peut griller le moteur |
-| Battery | **Li-ion 3.0/4.2 V**, **4** cellules, **2.2 Ah** | Même chimie que la LiPo. Les tensions de coupure sont corrigées ensuite (§4) |
+| Battery | **Li-ion 3.0/4.2 V**, **4** cellules, **2.2 Ah** (ou 3.7) | Même chimie que la LiPo. Les tensions de coupure sont corrigées ensuite (§4). La capacité ne sert qu'aux estimations d'autonomie : la même config marche avec les deux batteries |
 | Setup | Direct drive décoché, 13 / 36, 83 mm, **4 pôles**, **pas de sonde de température** | Sans sonde branchée, une sonde NTC déclarée donnerait une température absurde |
 
 Le README du pédago indiquait *Medium Outrunner*, 14 pôles et une sonde NTC : c'est une config de skate, qui ne correspond pas au BL-2s.
@@ -55,6 +55,8 @@ Le moteur siffle au début (mesure de R et L, rotor à l'arrêt), puis tourne qu
 | Flux linkage λ | 0,79 mWb (≈ 3500 kV avec 4 pôles : les 4 pôles sont confirmés) |
 | Courant proposé par l'assistant | 45,17 A (réduit ensuite) |
 | VESC ID | 70 |
+
+Sens du moteur : **pas inversé** (*Invert Motor Direction* laissé à *False*). Une consigne positive fait avancer la voiture, vérifié sous ROS.
 
 ### 4. Réglages manuels (*Motor Settings → General*)
 

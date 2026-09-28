@@ -20,9 +20,9 @@ Une voiture autonome 1/10 (Traxxas) pilotée par **ROS 2 Jazzy**. La voiture fou
 | Jetson Nano | Le calculateur. ROS 2 tourne dans des conteneurs Docker : **n'installez rien sur la Jetson elle-même** |
 | VESC | Le contrôleur moteur et direction. Il est déjà configuré : **ne pas y toucher** avec VESC Tool |
 | Manette F710 | Interrupteur au dos sur **X**, **LED MODE éteinte** |
-| Batteries LiPo 4S | Pleines à 16,8 V. **Arrêter sous 14,0 V** (3,5 V par cellule) : en dessous, la batterie s'abîme |
+| Batterie LiPo 4S | Une par voiture (2200 ou 3700 mAh) : elle alimente le VESC et la Jetson. Pleine à 16,8 V. **Arrêter sous 14,0 V** (3,5 V par cellule) : en dessous, la batterie s'abîme |
 
-**Allumer** : branchez le VESC (avec sa batterie), le LiDAR et le dongle de la manette, **puis** allumez la Jetson. Comptez environ 1 min avant que `ssh` réponde.
+**Allumer** : branchez le LiDAR et le dongle de la manette, **puis** la batterie (elle alimente le VESC et la Jetson). Comptez environ 1 min avant que `ssh` réponde.
 
 **Éteindre** : `sudo shutdown -h now`, puis attendez que les LED s'éteignent avant de débrancher. Une coupure franche peut corrompre la carte SD.
 

@@ -14,7 +14,7 @@ Détail et historique de chaque étape : `A_FAIRE_SUR_LA_JETSON.md` (section « 
 | LiDAR | LDRobot **LD19 / STL-19P**, 230400 bauds | Adaptateur CP2102 `10c4:ea60` → `/dev/lidar` |
 | Manette | Logitech **F710**, mode **X** | `046d:c21f` |
 | Caméra | Luxonis OAK-D Lite | Pas encore validée |
-| Batteries | LiPo **4S** : 2200 mAh (moteur), 3700 mAh (Jetson, avec convertisseur 5 V) | Pleine à 16,8 V, **arrêt sous 14,0 V** |
+| Batterie | **Une** LiPo **4S** par voiture : 2200 mAh ou 3700 mAh selon la voiture. Elle alimente le VESC et, par un convertisseur 5 V, la Jetson | Pleine à 16,8 V, **arrêt sous 14,0 V** |
 
 ## 1. PC de l'encadrant
 
@@ -96,7 +96,7 @@ Procédure complète, valeurs et explications : `host/vesc/README.md`. Il n'y a 
 
 ## 4. Vérifications, roues en l'air
 
-VESC (avec sa LiPo), LiDAR et dongle F710 branchés **avant** d'allumer la Jetson. F710 : interrupteur au dos sur **X**, **LED MODE éteinte**.
+LiDAR et dongle F710 branchés **avant** la batterie (elle alimente le VESC et la Jetson). F710 : interrupteur au dos sur **X**, **LED MODE éteinte**.
 
 ```bash
 lsusb | grep -E "0483:5740|10c4:ea60|046d:c21f"   # 3 lignes
