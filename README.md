@@ -30,27 +30,14 @@ Une voiture autonome 1/10 (Traxxas) pilotée par **ROS 2 Jazzy**. La voiture fou
 
 Sous Ubuntu 24.04.
 
-**Réseau** : votre PC crée un point d'accès Wi-Fi, et la Jetson s'y connecte avec son dongle Wi-Fi. Chaque équipe a ainsi son propre réseau.
+**Réseau : à définir.** Pistes à l'étude, rien n'est encore fixé :
+- première mise en route de la Jetson avec un écran HDMI, un clavier et une souris, pour la connecter au Wi-Fi depuis l'interface graphique. Alimentation par le jack : **5 V, jamais plus**, au moins 4 A ;
+- ensuite, la Jetson et le PC sur le même réseau Wi-Fi, par exemple un point d'accès créé par le PC ;
+- Internet sur le PC par le partage de connexion USB d'un téléphone.
 
-1. Sur le PC : *Paramètres → Wi-Fi → ⋮ → Activer le point d'accès*. Choisissez un nom (par exemple `robocar-<équipe>`) et un mot de passe. En ligne de commande :
-   ```bash
-   nmcli device wifi hotspot ssid robocar-<équipe> password <mot_de_passe>
-   ```
-   À réactiver à chaque séance, avant d'allumer la voiture.
-2. La première fois, la Jetson ne connaît pas ce réseau : on la configure avec un écran, point d'accès du PC allumé.
-   - Alimentez la Jetson par la prise jack, avec le cavalier J48 en place : **5 V, jamais plus** (au-delà, la Jetson grille), et **au moins 4 A** (un bloc 5 V 6 A convient, la Jetson ne prend que ce dont elle a besoin).
-   - Branchez un écran en HDMI, un clavier et une souris USB, puis connectez-vous avec l'utilisateur `robocar` (mot de passe donné par les encadrants).
-   - Cliquez sur l'icône réseau en haut à droite et choisissez `robocar-<équipe>`. Ou, dans un terminal (Ctrl+Alt+T) :
-     ```bash
-     sudo nmcli device wifi connect robocar-<équipe> password <mot_de_passe>
-     ```
-   - Relevez l'IP de la Jetson : `ip -4 addr`, sur l'interface `wlan…`.
+Plus tard, si la Jetson manque de RAM, on peut désactiver son interface graphique : `sudo systemctl set-default multi-user.target` (pour la remettre : `graphical.target`).
 
-   La Jetson s'en souvient et s'y reconnecte à chaque démarrage : l'écran, le clavier et la souris ne servent plus, la suite se fait en `ssh` depuis le PC.
-
-   Sans écran : branchez la Jetson au PC avec un câble Ethernet, partagez la connexion (*Paramètres → Réseau → Filaire → IPv4 → Partagé avec d'autres ordinateurs*), connectez-vous en `ssh` et lancez la commande `nmcli` ci-dessus.
-
-Dans les deux cas (point d'accès ou câble), le PC est en général en `10.42.0.1` et la Jetson en `10.42.0.x`. Relevez ces valeurs :
+Une fois la Jetson et le PC sur le même réseau, relevez ces valeurs :
 
 | Valeur | Comment la trouver | Exemple |
 |---|---|---|
@@ -58,12 +45,6 @@ Dans les deux cas (point d'accès ou câble), le PC est en général en `10.42.0
 | IP de la Jetson | Sur la Jetson : `ip -4 addr`. Depuis le PC : `ip neigh`, ou `nmap -sn <sous-réseau>` | `10.42.0.239` |
 
 Connexion : `ssh robocar@<IP_Jetson>`.
-
-**Internet** : le Wi-Fi du PC sert au point d'accès, donc **le PC n'a plus Internet par le Wi-Fi**. Branchez votre téléphone au PC en USB et activez le partage de connexion USB (Android : *Paramètres → Partage de connexion → Partage via USB* ; iPhone : *Partage de connexion*, avec le câble). Le PC a alors Internet, et la Jetson aussi, à travers le point d'accès du PC. Un câble Ethernet vers une box marche aussi.
-
-> Certaines cartes Wi-Fi savent être à la fois connectées à un Wi-Fi et point d'accès, comme un téléphone. Pour le savoir : `iw list`, section « valid interface combinations », une ligne qui contient à la fois `managed` et `AP`. Même dans ce cas, les deux doivent être sur le même canal, et NetworkManager ne le gère pas tout seul : le partage USB reste le plus simple.
-
-> **Pour plus tard, si la Jetson manque de RAM** : l'interface graphique occupe de la mémoire (à mesurer avec `free -h`). On peut la désactiver, la Jetson démarre alors en console : `sudo systemctl set-default multi-user.target`, puis redémarrer. Pour la remettre : `sudo systemctl set-default graphical.target`. Sans elle, l'écran ne donne plus qu'une console : on change de Wi-Fi avec `nmtui` ou `nmcli`.
 
 ```bash
 # ROS 2 Jazzy : https://docs.ros.org/en/jazzy/Installation.html
@@ -233,4 +214,3 @@ Pour lire le LiDAR, abonnez-vous à `/scan` (`sensor_msgs/msg/LaserScan`, ~10 Hz
 | Votre nœud publie, mais rien ne bouge | RB maintenu ? `/drive` à plus de 10 Hz ? Vérifiez avec `ros2 topic hz /drive` |
 | `control` ne démarre pas | VESC branché **et** alimenté ? `ls -l /dev/vesc` |
 | La Jetson s'éteint toute seule | Batterie trop basse, ou alimentation par micro-USB au lieu du jack |
-| La Jetson ne se reconnecte pas au point d'accès sans écran | Point d'accès du PC allumé avant la Jetson ? Sinon, refaire la connexion avec la commande `sudo nmcli` du §2 (connexion enregistrée pour tous les utilisateurs) |
