@@ -159,7 +159,7 @@ Avec ROS 2, un nœud tourne indifféremment sur la Jetson ou sur le PC. C'est un
 | Perception (traitement d'image, détection) | Au choix | Sur la Nano : CPU limité (4 cœurs A57), mais aucun transfert. Sur le PC : puissance disponible, mais les images doivent passer par le réseau (voir §6) |
 | SLAM, planification | Au choix | Sur la Nano : lourd, à mesurer avec `tegrastats`. Sur le PC : dépend de la stabilité du réseau (`/scan` est léger, une carte 2D passe bien) |
 | Inférence GPU | Jetson (service `gpu`) | Voir phase 8 |
-| Visualisation (RViz2, Foxglove) | PC | Il n'y a pas d'écran sur la voiture, et RViz est trop lourd pour la Nano |
+| Visualisation (RViz2, Foxglove) | PC | Il n'y a pas d'écran sur la voiture pendant qu'elle roule, et RViz est trop lourd pour la Nano |
 
 ---
 

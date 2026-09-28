@@ -33,7 +33,7 @@ sudo systemctl restart chrony
 sudo ufw allow from <sous-réseau>
 ```
 
-Réseau : pour la préparation, le plus simple est un câble Ethernet avec le **partage de connexion** de NetworkManager (*Paramètres → Réseau → Filaire → IPv4 → Partagé avec d'autres ordinateurs*) : le PC est en `10.42.0.1`, le sous-réseau `10.42.0.0/24`, et la Jetson reçoit d'habitude `10.42.0.239`. Si l'adresse change : `ip neigh`, ou `nmap -sn <sous-réseau>`. Les équipes, elles, passent par le point d'accès Wi-Fi de leur PC (`README.md` §2).
+Réseau : pour la préparation, le plus simple est un câble Ethernet avec le **partage de connexion** de NetworkManager (*Paramètres → Réseau → Filaire → IPv4 → Partagé avec d'autres ordinateurs*) : le PC est en `10.42.0.1`, le sous-réseau `10.42.0.0/24`, et la Jetson reçoit d'habitude `10.42.0.239`. Si l'adresse change : `ip neigh`, ou `nmap -sn <sous-réseau>`. Autre possibilité, sans câble : alimenter la Jetson sur secteur par le jack (**5 V, jamais plus**, au moins 4 A), brancher un écran HDMI, un clavier et une souris, et la connecter au Wi-Fi depuis l'interface graphique. Les équipes, elles, passent par le point d'accès Wi-Fi de leur PC, configuré de cette façon (`README.md` §2).
 
 ## 2. Carte SD : deux chemins
 
@@ -125,7 +125,7 @@ Test de la chaîne de sécurité sans matériel (10/10 attendu) : `A_FAIRE_SUR_L
 
 - **`ROS_DOMAIN_ID`** : un numéro par équipe dans `~/Robocar_ROS2/.env` (le numéro du département, `README.md` §2). Il doit être identique sur la Jetson et sur le PC de l'équipe. `entrypoint.sh` refuse les valeurs vides, 0, ou au-delà de 101.
 - **chrony** : la Jetson se synchronise sur l'IP donnée à `setup_host.sh`. Si l'équipe utilise son propre PC ou un autre réseau, relancer `sudo ./host/setup_host.sh <IP_du_PC>`, ou modifier la ligne `server` de `/etc/chrony/chrony.conf`.
-- **Wi-Fi** : si l'équipe a déjà créé son point d'accès, y connecter la Jetson (sinon, elle le fera, `README.md` §2) :
+- **Wi-Fi** : si l'équipe a déjà créé son point d'accès, y connecter la Jetson (sinon, elle le fera avec un écran, `README.md` §2) :
   ```bash
   sudo nmcli device wifi connect robocar-<équipe> password <mot_de_passe>
   ```
