@@ -130,7 +130,7 @@ Un périphérique débranché puis rebranché n'est plus vu par son conteneur : 
 - RB relâché ;
 - manette perdue ;
 - votre nœud planté ;
-- plus de `/drive` pendant 0,1 s.
+- plus de `/drive` pendant X s.
 
 Détail : `ARCHITECTURE.md`, « Chaîne de sécurité ».
 
