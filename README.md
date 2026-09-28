@@ -12,14 +12,13 @@ Une voiture autonome 1/10 (Traxxas) pilotée par **ROS 2 Jazzy**. La voiture fou
 - Architecture, topics, TF : `ARCHITECTURE.md`
 - SLAM (à faire par vous) : `pc/slam/README.md`
 - Séance LiDAR et SLAM (slides, en anglais) : `docs/Bootstrap LiDAR and SLAM.pptx`
-- Préparer une voiture (encadrants) : `BOOTSTRAP.md`
 
 ## 1. La voiture
 
 | Élément | Ce qu'il faut savoir |
 |---|---|
 | Jetson Nano | Le calculateur. ROS 2 tourne dans des conteneurs Docker : **n'installez rien sur la Jetson elle-même** |
-| VESC | Le contrôleur moteur et direction. Il est déjà configuré : **ne pas y toucher** avec VESC Tool |
+| VESC | Le contrôleur moteur et direction. A configurer avec VESC Tools (voir https://tek5-robocar.github.io/robocar_documentation/vesc-calibration/ + les changements dans le bootstrap lidar) |
 | Manette F710 | Interrupteur au dos sur **X**, **LED MODE éteinte** |
 | Batterie LiPo 4S | Une par voiture (2200 ou 3700 mAh) : elle alimente le VESC et la Jetson. Pleine à 16,8 V. **Arrêter sous 14,0 V** (3,5 V par cellule) : en dessous, la batterie s'abîme |
 
@@ -38,7 +37,8 @@ Sous Ubuntu 24.04.
    nmcli device wifi hotspot ssid robocar-<équipe> password <mot_de_passe>
    ```
    À réactiver à chaque séance, avant d'allumer la voiture.
-2. La première fois, la Jetson ne connaît pas ce réseau. Branchez-la au PC avec un câble Ethernet et partagez la connexion (*Paramètres → Réseau → Filaire → IPv4 → Partagé avec d'autres ordinateurs*), puis connectez-vous à elle en `ssh` (IP ci-dessous) et lancez :
+   
+3. La première fois, la Jetson ne connaît pas ce réseau. Branchez-la au PC avec un câble Ethernet et partagez la connexion (*Paramètres → Réseau → Filaire → IPv4 → Partagé avec d'autres ordinateurs*), puis connectez-vous à elle en `ssh` (IP ci-dessous) et lancez :
    ```bash
    sudo nmcli device wifi connect robocar-<équipe> password <mot_de_passe>
    ```
