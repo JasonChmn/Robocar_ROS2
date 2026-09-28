@@ -28,7 +28,31 @@ Une voiture autonome 1/10 (Traxxas) pilotée par **ROS 2 Jazzy**. La voiture fou
 
 ## 2. Préparer son PC (une seule fois)
 
-Sous Ubuntu 24.04 :
+Sous Ubuntu 24.04.
+
+**Réseau** : votre PC crée un point d'accès Wi-Fi, et la Jetson s'y connecte avec son dongle. Chaque équipe a ainsi son propre réseau.
+
+1. Sur le PC : *Paramètres → Wi-Fi → ⋮ → Activer le point d'accès*. Choisissez un nom (par exemple `robocar-<équipe>`) et un mot de passe. En ligne de commande :
+   ```bash
+   nmcli device wifi hotspot ssid robocar-<équipe> password <mot_de_passe>
+   ```
+   À réactiver à chaque séance, avant d'allumer la voiture.
+2. La première fois, la Jetson ne connaît pas ce réseau. Branchez-la au PC avec un câble Ethernet et partagez la connexion (*Paramètres → Réseau → Filaire → IPv4 → Partagé avec d'autres ordinateurs*), puis connectez-vous à elle en `ssh` (IP ci-dessous) et lancez :
+   ```bash
+   sudo nmcli device wifi connect robocar-<équipe> password <mot_de_passe>
+   ```
+   La Jetson s'en souvient et s'y reconnecte à chaque démarrage. Vous pouvez débrancher le câble.
+
+Dans les deux cas (point d'accès ou câble), le PC est en général en `10.42.0.1` et la Jetson en `10.42.0.x`. Relevez ces valeurs :
+
+| Valeur | Comment la trouver | Exemple |
+|---|---|---|
+| IP du PC et sous-réseau | `ip -4 addr` sur le PC, sur l'interface du point d'accès (ou du câble) | `10.42.0.1/24` → sous-réseau `10.42.0.0/24` |
+| IP de la Jetson | Depuis le PC : `ip neigh`, ou `nmap -sn <sous-réseau>` | `10.42.0.239` |
+
+Connexion : `ssh robocar@<IP_Jetson>`.
+
+Le Wi-Fi du PC sert au point d'accès : **le PC n'a plus Internet par le Wi-Fi**. Pour installer des paquets, coupez le point d'accès, ou branchez le PC à Internet par câble ou par le partage de connexion d'un téléphone en USB (la Jetson a alors Internet aussi).
 
 ```bash
 # ROS 2 Jazzy : https://docs.ros.org/en/jazzy/Installation.html
@@ -36,11 +60,11 @@ sudo apt install ros-jazzy-desktop ros-jazzy-ackermann-msgs
 
 # Horloge de référence pour la Jetson
 sudo apt install chrony
-echo -e "allow 10.42.0.0/24\nlocal stratum 10" | sudo tee -a /etc/chrony/chrony.conf
+echo -e "allow <sous-réseau>\nlocal stratum 10" | sudo tee -a /etc/chrony/chrony.conf
 sudo systemctl restart chrony
 
 # Pare-feu : laisser passer ROS
-sudo ufw allow from 10.42.0.0/24
+sudo ufw allow from <sous-réseau>
 
 # Le code
 git clone https://github.com/JasonChmn/Robocar_ROS2.git
@@ -59,8 +83,6 @@ source /opt/ros/jazzy/setup.bash
 export ROS_DOMAIN_ID=<votre numéro> ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
 ```
 
-**Réseau** : un câble Ethernet entre le PC et la Jetson, avec le partage de connexion (*Paramètres → Réseau → Filaire → IPv4 → Partagé avec d'autres ordinateurs*). La Jetson prend une adresse en `10.42.0.x` : `ssh robocar@10.42.0.239`, ou `ip neigh` pour la retrouver.
-
 ### Pourquoi ces réglages
 
 | Réglage | Pourquoi | Sans lui |
@@ -70,7 +92,7 @@ export ROS_DOMAIN_ID=<votre numéro> ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
 | `ROS_DOMAIN_ID` | Isoler chaque équipe | Une équipe voit, voire commande, la voiture d'une autre |
 | `ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET` | Découvrir les nœuds de la Jetson sur le réseau local | Le PC ne voit aucun topic de la voiture |
 
-Votre PC ne se synchronise pas sur celui d'une autre équipe ? La Jetson prend l'heure sur une IP fixe : demandez à un encadrant de relancer `setup_host.sh <votre IP>`.
+La Jetson prend l'heure sur une IP fixe, donnée à `setup_host.sh` (en général `10.42.0.1`). Si l'IP de votre PC est différente, relancez sur la Jetson `sudo ~/Robocar_ROS2/host/setup_host.sh <IP_PC>`.
 
 ## 3. Lancer la voiture
 
@@ -193,8 +215,8 @@ Pour lire le LiDAR, abonnez-vous à `/scan` (`sensor_msgs/msg/LaserScan`, ~10 Hz
 |---|---|
 | `ERREUR : ROS_DOMAIN_ID='' invalide` | Remplir `ROS_DOMAIN_ID` dans `~/Robocar_ROS2/.env` sur la Jetson |
 | Le PC ne voit aucun topic | Même `ROS_DOMAIN_ID` des deux côtés ? `ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET` ? |
-| Les topics sont visibles, mais `echo` ne reçoit rien | `sudo ufw allow from 10.42.0.0/24` sur le PC |
-| RViz vide, `extrapolation into the future` | Horloge : `chronyc sources` sur la Jetson doit afficher `^*` devant votre PC |
+| Les topics sont visibles, mais `echo` ne reçoit rien | `sudo ufw allow from <sous-réseau>` sur le PC |
+| RViz vide, `extrapolation into the future` | Horloge : `chronyc sources` sur la Jetson doit afficher `^*` devant votre PC. Sinon, IP du PC changée : relancer `setup_host.sh <IP_PC>` |
 | LB et RB ne font rien | Manette en mode X ? Dongle branché avant `up` ? Sinon `up -d --force-recreate control` |
 | La vitesse est en tout ou rien, ou sur la croix | LED MODE allumée : appuyez sur MODE |
 | Votre nœud publie, mais rien ne bouge | RB maintenu ? `/drive` à plus de 10 Hz ? Vérifiez avec `ros2 topic hz /drive` |

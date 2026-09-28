@@ -26,14 +26,14 @@ sudo apt install ros-jazzy-desktop ros-jazzy-ackermann-msgs
 
 # Horloge de référence pour la Jetson (elle n'a pas de pile RTC)
 sudo apt install chrony
-echo -e "allow 10.42.0.0/24\nlocal stratum 10" | sudo tee -a /etc/chrony/chrony.conf
+echo -e "allow <sous-réseau>\nlocal stratum 10" | sudo tee -a /etc/chrony/chrony.conf
 sudo systemctl restart chrony
 
 # Pare-feu : laisser passer le trafic ROS venant de la Jetson
-sudo ufw allow from 10.42.0.0/24
+sudo ufw allow from <sous-réseau>
 ```
 
-Réseau : un câble Ethernet entre le PC et la Jetson, avec le **partage de connexion** de NetworkManager (*Paramètres → Réseau → Filaire → IPv4 → Partagé avec d'autres ordinateurs*). La Jetson reçoit une adresse en `10.42.0.x`, d'habitude `10.42.0.239`. Si l'adresse change : `ip neigh`, ou `nmap -sn 10.42.0.0/24`.
+Réseau : pour la préparation, le plus simple est un câble Ethernet avec le **partage de connexion** de NetworkManager (*Paramètres → Réseau → Filaire → IPv4 → Partagé avec d'autres ordinateurs*) : le PC est en `10.42.0.1`, le sous-réseau `10.42.0.0/24`, et la Jetson reçoit d'habitude `10.42.0.239`. Si l'adresse change : `ip neigh`, ou `nmap -sn <sous-réseau>`. Les équipes, elles, passent par le point d'accès Wi-Fi de leur PC (`README.md` §2).
 
 ## 2. Carte SD : deux chemins
 
@@ -73,7 +73,7 @@ Ensuite, passer directement au §3.
    ```bash
    git clone https://github.com/JasonChmn/Robocar_ROS2.git ~/Robocar_ROS2
    cd ~/Robocar_ROS2
-   sudo ./host/setup_host.sh 10.42.0.1   # groupes, swap 4 Go, MAXN, chrony (serveur = PC), udev
+   sudo ./host/setup_host.sh <IP_PC>     # groupes, swap 4 Go, MAXN, chrony (serveur = PC), udev
    exit                                  # se reconnecter pour les groupes
    chronyc sources                       # « ^* » devant le PC = synchronisé
    ```
@@ -124,7 +124,11 @@ Test de la chaîne de sécurité sans matériel (10/10 attendu) : `A_FAIRE_SUR_L
 ## 5. Avant de donner la voiture
 
 - **`ROS_DOMAIN_ID`** : un numéro par équipe dans `~/Robocar_ROS2/.env` (le numéro du département, `README.md` §2). Il doit être identique sur la Jetson et sur le PC de l'équipe. `entrypoint.sh` refuse les valeurs vides, 0, ou au-delà de 101.
-- **chrony** : la Jetson se synchronise sur l'IP donnée à `setup_host.sh`. Si l'équipe utilise son propre PC, relancer `sudo ./host/setup_host.sh <IP_du_PC>`, ou modifier la ligne `server` de `/etc/chrony/chrony.conf`.
+- **chrony** : la Jetson se synchronise sur l'IP donnée à `setup_host.sh`. Si l'équipe utilise son propre PC ou un autre réseau, relancer `sudo ./host/setup_host.sh <IP_du_PC>`, ou modifier la ligne `server` de `/etc/chrony/chrony.conf`.
+- **Wi-Fi** : si l'équipe a déjà créé son point d'accès, y connecter la Jetson (sinon, elle le fera, `README.md` §2) :
+  ```bash
+  sudo nmcli device wifi connect robocar-<équipe> password <mot_de_passe>
+  ```
 - **Clé SSH** de l'équipe : `ssh-copy-id robocar@<IP>`.
 - **Sauvegarder l'image SD** d'une voiture validée, Jetson éteinte proprement :
   ```bash
@@ -138,7 +142,7 @@ Test de la chaîne de sécurité sans matériel (10/10 attendu) : `A_FAIRE_SUR_L
 |---|---|---|
 | La Jetson s'éteint sans prévenir | Alimentation micro-USB | Jack 5 V 4 A, cavalier J48 |
 | Pas de `ssh` ni de `ping` après 2 min, alors que le lien Ethernet est allumé | Carte SD restée dans le PC | Remettre la carte |
-| `ros2 topic list` voit les topics, mais `echo` ne reçoit rien | Pare-feu du PC | `sudo ufw allow from 10.42.0.0/24` |
+| `ros2 topic list` voit les topics, mais `echo` ne reçoit rien | Pare-feu du PC | `sudo ufw allow from <sous-réseau>` |
 | TF rejetées dans RViz, `certificate not yet valid` | Horloge de la Jetson fausse | `chronyc sources` : `^*` attendu |
 | La config du VESC « se perd » au démarrage | Ancien `vesc-config.service` | `sudo systemctl disable --now vesc-config` |
 | LB et RB ne font rien | Mauvais numéros de boutons | `joy_teleop.yaml` : LB = 4, RB = 5 (mesurés sur la F710) |

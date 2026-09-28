@@ -31,7 +31,7 @@ Les réglages réseau sont ceux de `README.md` §2 : chrony, `ufw`, même `ROS_D
 
 ```bash
 source /opt/ros/jazzy/setup.bash
-export ROS_DOMAIN_ID=42 ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET   # valeurs de .env
+export ROS_DOMAIN_ID=<votre numéro> ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET   # mêmes valeurs que .env
 
 # vérifier les entrées avant de lancer le SLAM
 ros2 topic hz /scan                          # ~10 Hz
