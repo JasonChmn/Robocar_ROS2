@@ -12,6 +12,7 @@ Une voiture autonome 1/10 (Traxxas) pilotée par **ROS 2 Jazzy**. La voiture fou
 - Architecture, topics, TF : `ARCHITECTURE.md`
 - SLAM (à faire par vous) : `pc/slam/README.md`
 - Séance LiDAR et SLAM (slides, en anglais) : `docs/Bootstrap LiDAR and SLAM.pptx`
+- Tests de la caméra RGBD OAK-D-Lite (Docker, à dézipper, mode d'emploi dans son `README.md`) : `docs/test_camera_rgbd.zip`
 
 ## 1. La voiture
 
